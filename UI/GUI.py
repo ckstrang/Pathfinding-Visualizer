@@ -1,10 +1,13 @@
-import customtkinter as ctk
-import tkinter as tk
-from UI.grid import Grid
-import Core.event_handler as event_handler
-import Core.config as config
 import os
+import tkinter as tk
+
+import customtkinter as ctk
 from PIL import Image
+
+import Core.config as config
+import Core.event_handler as event_handler
+from UI.grid import Grid
+
 
 class App(ctk.CTk):
     def __init__(self):
@@ -271,7 +274,7 @@ class App(ctk.CTk):
     def retrieve_levels(self):
         # '''Retrieves list of levels from Assets/Levels subfolder and configures level_picker values.'''
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        level_dir = os.path.abspath(os.path.join(current_dir, '..', 'assets', 'levels'))
+        level_dir = os.path.abspath(os.path.join(current_dir, '..', 'Assets', 'Levels'))
         levels = [file for file in os.listdir(level_dir) if file.endswith('.json')]
         self.level_picker.configure(values=levels)
 

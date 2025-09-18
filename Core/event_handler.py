@@ -1,10 +1,13 @@
-import Core.config as config
 import json
 import os
-from customtkinter import filedialog, CTkInputDialog
-import Algorithms.BFSDFS as BFSDFS, Algorithms.A_Star as A_Star
-from UI.grid import Grid
 from tkinter import messagebox
+
+from customtkinter import CTkInputDialog, filedialog
+
+import Algorithms.A_Star as A_Star
+import Algorithms.BFSDFS as BFSDFS
+import Core.config as config
+from UI.grid import Grid
 
 # Delay is the delay (ms) in performing search steps.
 SPEED_TO_DELAY = {
@@ -207,7 +210,7 @@ def save_level(GUI):
         file_name += '.json'
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    level_dir = os.path.abspath(os.path.join(current_dir, '..', 'assets', 'levels'))
+    level_dir = os.path.abspath(os.path.join(current_dir, '..', 'Assets', 'Levels'))
     os.makedirs(level_dir, exist_ok=True)
     level_path = os.path.join(level_dir, file_name)
 
@@ -249,7 +252,7 @@ def load_level(GUI, file_name):
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
-    level_dir = os.path.abspath(os.path.join(current_dir, '..', 'assets', 'levels'))
+    level_dir = os.path.abspath(os.path.join(current_dir, '..', 'Assets', 'Levels'))
     level_path = os.path.join(level_dir, file_name)
 
     with open(level_path, 'r') as f:

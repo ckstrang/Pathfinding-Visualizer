@@ -1,8 +1,10 @@
-import Core.config as config
 import os
+import time
+
 import customtkinter as ctk
 from PIL import Image, ImageTk
-import time
+
+import Core.config as config
 
 TILE_COLORS = {
     'empty': 'white',
@@ -333,7 +335,7 @@ class Grid:
             PhotoImage: The requested icon in the specified size.
         """
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        icon_path = os.path.abspath(os.path.join(base_dir, '..', 'assets', 'icons', name))
+        icon_path = os.path.abspath(os.path.join(base_dir, '..', 'Assets', 'Icons', name))
 
         img = Image.open(icon_path).resize((size, size))
         return ImageTk.PhotoImage(img)

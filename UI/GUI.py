@@ -272,7 +272,7 @@ class App(ctk.CTk):
             self.heuristic_weight_picker.grid_forget()
 
     def retrieve_levels(self):
-        # '''Retrieves list of levels from Assets/Levels subfolder and configures level_picker values.'''
+        '''Retrieves list of levels from Assets/Levels subfolder and configures level_picker values.'''
         current_dir = os.path.dirname(os.path.abspath(__file__))
         level_dir = os.path.abspath(os.path.join(current_dir, '..', 'Assets', 'Levels'))
         levels = [file for file in os.listdir(level_dir) if file.endswith('.json')]
@@ -293,7 +293,7 @@ class App(ctk.CTk):
             size (int): Size of the icon in pixels (width and height).
 
         Returns:
-            CTkImage: The requested icon in the specified size.
+            CTkImage: Requested icon in the specified size.
         """
         # Get current file directory
         current_dir = os.path.dirname(os.path.abspath(__file__))

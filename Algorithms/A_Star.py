@@ -1,8 +1,20 @@
-import Core.config as config
 import heapq
+
+import Core.config as config
+
 
 class Node:
     def __init__(self, x, y, parent, move, g, h):
+        """
+        Represents a single node.
+
+        Args:
+            x, y       (int): Coordinates of the node.
+            parent     (Node | None): Parent node from which this node was reached.
+            move       (list[int, int]): Move taken to reach this node from parent.
+            g          (int): Cost from start to this node.
+            h          (int): Heuristic estimate from this node to goal.
+        """
         self.x = x
         self.y = y
         self.parent = parent
@@ -12,36 +24,37 @@ class Node:
         self.f = g + h
     
     def __lt__(self, other):
+        """Compare nodes by f value."""
         return self.f < other.f
 
 class Pathfinder:
     """
-    Implements weighted A* on a 2D grid.
+    Implements weighted A* search on a 2D grid.
 
     Attributes:
-        grid (list[list[str]]): The grid environment.
-        moves (list[tuple[int, int]]): The list of moves based on selected movement type.
-        start (tuple[int, int]): The starting coordinates for the search.
-        goal (tuple[int, int]): The goal coordinates for the search.
-        heuristic (str): The heuristic to use for calculating h.
-        w (int): The weight of the heuristic.
-        route (list[Node]): List of nodes along the solution route.
-        frontier (heapq): Priority queue of nodes to be visited.
-        enqueued (set[tuple[int, int]]): Set of coordinates that have been enqueued into the frontier.
-        visited (set[tuple[int, int]]): Set of coordinates that have been visited.
-        counter (int): counter used for the frontier.
-        current (Node): The node currently being explored.
+        grid                              (Grid): Grid environment.
+        moves                  (list[list[int]]): List of moves based on selected movement type.
+        start                  (tuple[int, int]): Starting coordinates for the search.
+        goal                   (tuple[int, int]): Goal coordinates for the search.
+        heuristic                          (str): Heuristic type (Diagonal, Manhattan, or None).
+        w                                (float): Weight of the heuristic.
+        route                       (list[Node]): Final route from goal to start.
+        frontier (list[tuple[float, int, Node]]): Heap of nodes to visit (f, counter, Node).
+        enqueued          (set[tuple[int, int]]): Coordinates already in frontier.
+        visited           (set[tuple[int, int]]): Coordinates already visited.
+        counter                            (int): Tie-breaker counter for heapq.
+        current                           (Node): Current node being explored.
     """
     def __init__(self, grid, sx, sy, gx, gy, heuristic, w):
         """
         Initializes the Search object and begins the simulation.
 
         Args:
-            grid (list[list[str]]): The grid environment.
-            sx, sy      (int, int): Starting coordinates of the search agent.
+            grid              Grid: Grid environment.
+            sx, sy      (int, int): Starting coordinates.
             gx, gy      (int, int): Goal coordinates.
-            heuristic        (str): The heuristic to use.
-            w                (int): Weight of the heuristic.
+            heuristic        (str): Heuristic to use.
+            w              (float): Weight of the heuristic.
         """
         self.grid = grid
         self.moves = config.get_moves(config.movement_type)
@@ -63,14 +76,14 @@ class Pathfinder:
 
     def compute_h(self, x, y, gx, gy):
         """
-        Computes and returns h(n) of any given x, y position relative to a given goal position.
+        Compute heuristic estimate from (x, y) to (gx, gy).
 
-        Parameters:
-            x, y   (int, int): Coordinates of given position.
-            gx, gy (int, int): Coordinates of goal position.
-        
+        Args:
+            x, y   (int): Current coordinates.
+            gx, gy (int): Goal coordinates.
+
         Returns:
-            int              : Computed estimate.
+            int: Heuristic estimate (weighted if w != 1).
         """
         if self.heuristic == 'Diagonal':
             dx = abs(x - gx)
@@ -86,10 +99,11 @@ class Pathfinder:
         Performs a single iteration of the search.
 
         Returns:
-            bool: True if search should continue, false if complete or aborted.
+            bool: True if search should continue, false if finished or failed.
         """
         if not config.simulating:
             return False # Search is stopped externally
+        
         if len(self.frontier) == 0:
             config.simulating = False
             return False # Search failed
@@ -122,8 +136,7 @@ class Pathfinder:
     
     def _expansion(self, x, y):
         """
-        Helper method that expands outward around a given x, y position, based on self.moves.
-        Creates new nodes, and adds them to the frontier, and the set of positions in enqueued.
+        Expands neighbors of current node and adds valid ones to the frontier.
         """
         for move in self.moves:
             if config.is_valid_pos(x, y, move, self.grid):
@@ -141,7 +154,7 @@ class Pathfinder:
         Returns the coordinates of nodes currently in the frontier.
 
         Returns:
-            list[list[int, int]]: List of [x, y] positions.
+            list[list[int]]: List of [x, y] positions.
         """
         return [[node[2].x, node[2].y] for node in self.frontier]
 

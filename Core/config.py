@@ -17,7 +17,7 @@ draw_type = 'wall'
 editor_has_start = False
 editor_has_goal = False
 
-def set_editor_type(type):
+def set_editor_type(tile_type):
     """
     Sets what tile to draw with.
 
@@ -25,7 +25,7 @@ def set_editor_type(type):
         type (str): 'empty', 'wall', 'start', or 'goal'.
     """
     global draw_type
-    draw_type = type
+    draw_type = tile_type
 
 def set_movement_type(moveset):
     """
@@ -42,7 +42,10 @@ def get_moves(moveset):
     Returns list of moves based on moveset
     
     Parameters:
-        moveset (str): Moveset to be used (cardinal or diagonal).
+        moveset (str): Moveset to be used (Cardinal or Diagonal).
+    
+    Returns:
+        list[list[int]]: List of moves belonging to moveset.
     """
     if moveset == 'Cardinal':
         return [[0,-1], [-1,0], [1,0], [0,1]]
@@ -54,12 +57,12 @@ def get_moves(moveset):
 def get_move_cost(move) -> int:
     """
     Returns cost of move based on what type of move it is.
-    - Cardinal (straight) moves: cost of 100
-    - Diagonal moves: cost of 141
+
     Returns:
-        int: cost of move
+        int: cost of the move. 100 for Cardinal, 141 for Diagonal.
     """
-    if move in [[0,-1], [-1,0], [1,0], [0,1]]:
+    cardinal_moves = {(0,-1), (-1,0), (1,0), (0,1)}
+    if tuple(move) in cardinal_moves:
         return 100
     else:
         return 141
@@ -67,6 +70,11 @@ def get_move_cost(move) -> int:
 def is_valid_pos(x, y, move, grid):
     """
     Checks whether an move results in a valid position.
+
+    Parameters:
+        x, y          (int): Position coordinates.
+        move    (list[int]): Move to apply.
+        grid               : Grid object to check if position is valid.
     
     Returns:
         bool: True if valid position, False if invalid position.
@@ -83,28 +91,18 @@ def diagonal_check(x, y, move, grid):
     """
     Checks neighboring tiles to disallow jumping over corners.
     
+    Parameters:
+        x, y          (int): Position coordinates.
+        move    (list[int]): Diagonal move to apply.
+        grid               : Grid object to check if diagonal movement is valid.
+
     Returns:
-        legal (bool): True if diagonal move doesn't jump over a corner, False if it does.
+        bool: True if diagonal move doesn't jump over a corner, False if it does.
     """
-    legal = True
-    if move == [-1, -1]:
-        # check left
-        if grid.get(x-1, y) == 'wall': legal = False
-        #check up
-        if grid.get(x, y-1) == 'wall': legal = False
-    elif move == [1, -1]:
-        # check right
-        if grid.get(x+1, y) == 'wall': legal = False
-        # check up
-        if grid.get(x, y-1) == 'wall': legal = False
-    elif move == [-1, 1]:
-        # check left
-        if grid.get(x-1, y) == 'wall': legal = False
-        # check down
-        if grid.get(x, y+1) == 'wall': legal = False
-    elif move == [1, 1]:
-        # check right
-        if grid.get(x+1, y) == 'wall': legal = False
-        # check down
-        if grid.get(x, y+1) == 'wall': legal = False
-    return legal
+    dx, dy = move
+    if abs(dx) == 1 and abs(dy) == 1:
+        if grid.get(x + dx, y) == "wall": 
+            return False
+        if grid.get(x, y + dy) == "wall":
+            return False
+    return True

@@ -34,19 +34,26 @@ def draw(event, GUI):
     """
     Draw on grid when mouse clicked.
     
-    Paramaters:
-        grid (Grid): Grid to draw on.
+    Parameters:
+        GUI: Reference to the main GUI containing canvas and grid.
     """
+    
+    # Block adjusting start and goal while simulating
     if config.draw_type in ['start', 'goal'] and config.simulating:
         return
+    
+    # Block placing more than one start position
     if config.draw_type == 'start' and config.editor_has_start:
         config.draw_type = 'wall'
+    
+    # Block placing more than one goal position
     if config.draw_type == 'goal' and config.editor_has_goal:
         config.draw_type = 'wall'
     
     canvas = GUI.canvas
     grid = GUI.grid
 
+    # Calculate grid coord based on event coordinates
     canvas_width = canvas.winfo_width()
     canvas_height = canvas.winfo_height()
     grid_width = grid.cols * grid.tile_size
@@ -56,17 +63,24 @@ def draw(event, GUI):
 
     x = (event.x - offset_x) // grid.tile_size
     y = (event.y - offset_y) // grid.tile_size
+
     try:
         state = grid.grid[y][x].state
-    except:
+    except IndexError:
         return
+    
+    # Block placing a wall on the starting position
     if state == 'start' and config.draw_type == 'wall':
         return
+    
+    # Block placing a wall on the goal position
     if state == 'goal' and config.draw_type == 'wall':
         return
+    
     if config.draw_type in ['start', 'goal']:
         grid.set_obj(x, y)
         grid.draw()
+
     grid.update_tile(x, y, config.draw_type)
     canvas.update_idletasks()
 
@@ -74,12 +88,13 @@ def erase(event, GUI):
     """
     Erase on grid when mouse clicked.
 
-    Paramaters:
-        grid (Grid): Grid to draw on.
+    Parameters:
+        GUI: Reference to the main GUI containing canvas and grid.
     """
     canvas = GUI.canvas
     grid = GUI.grid
 
+    # Calculate grid coord based on event coordinates
     canvas_width = canvas.winfo_width()
     canvas_height = canvas.winfo_height()
 
@@ -99,8 +114,20 @@ def erase(event, GUI):
     grid.update_tile(x, y, 'empty')
     canvas.update_idletasks()
 
-def run_algorithm(algo, grid: Grid, GUI, speed, heuristic: str, weight):
+def run_algorithm(algo: str, grid: Grid, GUI, speed, heuristic: str, weight):
+    """
+    Runs the selected pathfinding algorithm in a step based simulation.
+
+    Parameters:
+        algo (str)          : Algorithm name (BFS, DFS, A*, UCS, GBeFS).
+        grid (Grid)         : Grid object where the simulation runs.
+        GUI                 : Reference to the main GUI containing canvas and grid.
+        speed (str)         : Speed selection (Very Fast, Fast, Normal, Slow, Very Slow)
+        heuristic (str)     : Heuristic type for A* (Manhattan, Diagonal, None)
+        weight (float | str): Heuristic weight (0, 0.5, 1, 2, Infinity)
+    """
     def update():
+        """Update GUI"""
         grid.show_open(search.get_frontier())
         grid.show_closed(search.get_visited())
         route = search.get_route()
@@ -109,6 +136,7 @@ def run_algorithm(algo, grid: Grid, GUI, speed, heuristic: str, weight):
         GUI.canvas.update_idletasks()
 
     def simulation_step():
+        """Perform single search step"""
         global steps
 
         if not config.simulating:
@@ -148,7 +176,7 @@ def run_algorithm(algo, grid: Grid, GUI, speed, heuristic: str, weight):
     gx, gy = grid.get_goal()
 
     if sx == -1 or gx == -1:
-        print("ERROR: Invalid start or goal!")
+        messagebox.showerror(title='Failed to run search', message='Invalid Start or Goal position.')
         return
 
     global search
@@ -196,9 +224,13 @@ def clear_grid(grid):
     grid.draw()
 
 def save_level(GUI):
-    """Saves the grid as a .JSON file to a user specified route."""
+    """
+    Saves the grid as a .JSON file to a user specified route.
+    
+    Parameters:
+        GUI: Reference to the main GUI containing canvas and grid.
+    """
     if not config.editor_has_start or not config.editor_has_goal:
-        print('no start or goal')
         messagebox.showerror(title='File failed to save', message='Missing Start or Goal position.')
         return
     dialog = CTkInputDialog(title="Save Level", text="Enter a filename:")
@@ -211,7 +243,6 @@ def save_level(GUI):
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     level_dir = os.path.abspath(os.path.join(current_dir, '..', 'Assets', 'Levels'))
-    os.makedirs(level_dir, exist_ok=True)
     level_path = os.path.join(level_dir, file_name)
 
     if GUI.grid.sim_present:
@@ -223,6 +254,12 @@ def save_level(GUI):
 
 def _save_grid(grid, file_name='level.json'):
     """Writes the grid into a .JSON.
+    
+    Encoding:
+        0 = empty,
+        1 = wall,
+        2 = start,
+        3 = goal,
     
     Parameters:
         grid     (Grid): Grid to write.
@@ -244,14 +281,16 @@ def _save_grid(grid, file_name='level.json'):
         json.dump(serialized_grid, f)
 
 def load_level(GUI, file_name):
-    """Loads level from .JSON file."""
-    import json
-    import os
-
+    """
+    Loads level from .JSON file.
+    
+    Parameters:
+        GUI            : Reference to the main GUI containing canvas and grid.
+        file_name (str): File name.
+    """
     config.level_name = file_name
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-
     level_dir = os.path.abspath(os.path.join(current_dir, '..', 'Assets', 'Levels'))
     level_path = os.path.join(level_dir, file_name)
 
@@ -259,12 +298,13 @@ def load_level(GUI, file_name):
         serialized_grid = json.load(f)
 
     rows = len(serialized_grid)
-    cols = len(serialized_grid[0]) if rows > 0 else 0
+    cols = len(serialized_grid[0])
 
     GUI.update_idletasks()
     canvas_width = GUI.canvas.winfo_width()
     canvas_height = GUI.canvas.winfo_height()
 
+    # Calculate cell size 
     cell_size_w = canvas_width // cols
     cell_size_h = canvas_height // rows
     cell_size = min(cell_size_w, cell_size_h)
@@ -272,17 +312,18 @@ def load_level(GUI, file_name):
 
     GUI.grid = Grid(rows=rows, cols=cols, canvas=GUI.canvas, cell_size=cell_size)
 
-    apply_grid_data(GUI.grid, serialized_grid)
+    _apply_grid_data(GUI.grid, serialized_grid)
 
     config.editor_has_goal = True
     config.editor_has_start = True
     GUI.grid.draw()
 
-def apply_grid_data(grid, serialized_grid):
+def _apply_grid_data(grid, serialized_grid):
     """
     Applies grid data to the existing GUI grid.
 
     Parameters:
+        grid    (Grid) : Grid to write.
         serialized_grid: Grid as read in by load_level().
     """
     load_map = {
@@ -292,43 +333,48 @@ def apply_grid_data(grid, serialized_grid):
         3: 'goal'
     }
 
-    for r, row in enumerate(serialized_grid):
-        for c, val in enumerate(row):
-            state = load_map.get(val, 'empty')
-            grid.grid[r][c].state = state
-            if state == 'start':
-                grid.sx, grid.sy = c, r
-            elif state == 'goal':
-                grid.gx, grid.gy = c, r
+    for row_index in range(len(serialized_grid)):
+        for col_index in range(len(serialized_grid[row_index])):
+            value = serialized_grid[row_index][col_index]
+            state = load_map.get(value, "empty")
+
+            grid.grid[row_index][col_index].state = state
+
+            if state == "start":
+                grid.sx, grid.sy = col_index, row_index
+            elif state == "goal":
+                grid.gx, grid.gy = col_index, row_index
 
 def algo_selection(GUI, algo):
+    """
+    Enables the GUI dropdown for algorithm selection.
+
+    Parameters:
+        GUI        : Reference to the main GUI containing canvas and grid.
+        algo (str) : Algorithm name (BFS, DFS, A*, UCS, GBeFS).
+    """
     GUI.toggle_weight_option(algo)
 
 def size_select(GUI, size):
     """
     Handles grid size selection.
-    Redraws the grid based on selection.
+    Redraws the grid based on size selection.
     
     Parameters:
         GUI: Contains the grid to be redrawn.
         size (str): Grid dimensions.
-    
     """
     size = int(size.split('x')[0])
-    grid = []
-    for row in range(size):
-        grid_row = []
-        for node in range(row):
-            grid_row.append(0)
-        grid.append(grid_row)
     
     GUI.update_idletasks()
     canvas_width = GUI.canvas.winfo_width()
     canvas_height = GUI.canvas.winfo_height()
 
+    # Calculate cell size
     cell_size_w = canvas_width // size
     cell_size_h = canvas_height // size
     GUI.cell_size = min(cell_size_w, cell_size_h)
+
     GUI.grid = Grid(rows=size, cols = size, canvas=GUI.canvas, cell_size=GUI.cell_size)
     GUI.grid.draw()
 
@@ -340,5 +386,10 @@ def toggle_pause():
     config.paused = not config.paused
 
 def set_speed(speed):
-    """Sets simulation speed"""
+    """
+    Sets simulation speed
+    
+    Parameters:
+        speed (str) : Speed selection (Very Fast, Fast, Normal, Slow, Very Slow)
+    """
     config.speed = speed

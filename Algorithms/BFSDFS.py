@@ -1,5 +1,7 @@
-import Core.config as config
 from collections import deque
+
+import Core.config as config
+
 
 class Node:
     """
@@ -7,8 +9,8 @@ class Node:
 
     Attributes:
         x, y      (int, int): Coordinates of the node.
-        parent        (node): Parent node from which this node was reached.
-        move (list[int,int]): The move taken to reach this node.
+        parent (Node | None): Parent node from which this node was reached.
+        move (list[int]): The move taken to reach this node.
     """
     def __init__(self, x, y, parent, move):
         self.x = x
@@ -21,7 +23,7 @@ class Pathfinder:
     Implements a pathfinding search algorithm (BFS or DFS) on a 2D grid.
 
     Attributes:
-        grid          (list[list[str]]): The 2D grid representing the environment.
+        grid          (list[list[str]]): Grid representing the environment.
         start                (int, int): Starting coordinates of the search agent.
         goal                 (int, int): Goal coordinates.
         mode                      (str): The search algorithm (BFS or DFS)
@@ -108,8 +110,8 @@ class Pathfinder:
             if config.is_valid_pos(x, y, move, self.grid):
                 nx, ny = x + move[0], y + move[1]
                 if (nx, ny) not in self.visited and (nx, ny) not in self.enqueued:
-                    next = Node(nx, ny, self.current, move)
-                    self.frontier.append(next)
+                    next_node = Node(nx, ny, self.current, move)
+                    self.frontier.append(next_node)
                     self.enqueued.add((nx, ny))
         
     def get_frontier(self) -> list[list[tuple[int, int]]]:
@@ -117,7 +119,7 @@ class Pathfinder:
         Returns the coordinates of nodes currently in the frontier.
 
         Returns:
-            list[list[tuple[int, int]]]: List of [x, y] positions.
+            list[list[int]]: List of [x, y] positions.
         """
         return [[node.x, node.y] for node in self.frontier]
 

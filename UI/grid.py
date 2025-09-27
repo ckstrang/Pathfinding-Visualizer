@@ -23,7 +23,7 @@ class Node:
     Attributes:
         x, y (int, int): Coordinates of the node.
         size (int): Size of node in pixels.
-        state (str): The current state of the tile ('empty', 'wall', etc. See TILE_COLORS for all possible states).
+        state (str): Current state of the tile ('empty', 'wall', etc. See TILE_COLORS for all possible states).
         parent (Node | None): Reference to parent node along route.
         move (list[int, int] | None): Move taken to reach node from parent.
         canvas_id (int | None): Canvas rectangle ID for rendering.
@@ -79,7 +79,7 @@ class Grid:
         Parameters:
             rows (int): Number of rows in the grid.
             cols (int): Number of columns in the grid.
-            canvas (tk.Canvas): The canvas to draw on.
+            canvas (tk.Canvas): Canvas to draw on.
             cell_size (int): Pixel size of each cell.
         """
         self.rows = rows
@@ -97,6 +97,7 @@ class Grid:
         self.init_grid()
 
     def init_images(self):
+        """Initializes images for use in visualizing path"""
         self.image_refs = {
             'goal': self.get_element_icon('Goal.png', self.tile_size),
             'start': self.get_element_icon('Start.png', self.tile_size)
@@ -156,7 +157,7 @@ class Grid:
 
     def set_obj(self, x: int, y: int):
         """
-        Sets an objective (start or goal) at a given pixel location. 
+        Sets an objective (start or goal) at a given grid location. 
         Reads config.draw_type for the objective type.
 
         Parameters:
@@ -180,7 +181,7 @@ class Grid:
 
     def clear_obj(self, x: int, y: int):
         """
-        Clears an objective (start or goal) at the given pixel location, resetting the state to 'empty'.
+        Clears an objective (start or goal) at the given grid location, resetting the state to 'empty'.
 
         Paramaters:
             px, py (int, int): coordinates in pixels.
@@ -216,7 +217,7 @@ class Grid:
             x, y (int, int): Tile coordinates.
 
         Returns:
-            str: The tile state (e.g., 'wall', 'empty').
+            str: Tile state (e.g., 'wall', 'empty').
         """
         if self.is_OOB(x, y):
             return 'wall'
@@ -240,14 +241,14 @@ class Grid:
     def get_start(self):
         """
         Returns:
-            list[int, int]: The [x, y] coordinates of the start tile.
+            list[int, int]: [x, y] coordinates of the start tile.
         """
         return [self.sx, self.sy]
 
     def get_goal(self):
         """
         Returns:
-            list[int, int]: The [x, y] coordinates of the goal tile.
+            list[int, int]: [x, y] coordinates of the goal tile.
         """
         return [self.gx, self.gy]
 
@@ -332,7 +333,7 @@ class Grid:
             size (int): Size of the icon in pixels (width and height).
 
         Returns:
-            PhotoImage: The requested icon in the specified size.
+            PhotoImage: Requested icon in the specified size.
         """
         base_dir = os.path.dirname(os.path.abspath(__file__))
         icon_path = os.path.abspath(os.path.join(base_dir, '..', 'Assets', 'Icons', name))
